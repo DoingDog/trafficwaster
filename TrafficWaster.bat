@@ -6,7 +6,7 @@
 ::   enable only one before using (delete"::" before "set")
 
 ::   CN file link
-set link=https://res.ldmnq.com/download/4.0/ldinst64_4.0.82.exe
+set link=https://down.360safe.com/se/360se14.2.1166.0.exe
 
 ::   Global file link
 ::set link=https://jp.edis.at/1000MB.test
@@ -23,38 +23,14 @@ set link=https://res.ldmnq.com/download/4.0/ldinst64_4.0.82.exe
 
 ::   multi thread download
 
-set thread=16
-
-::   auto refresh seconds
-
-set refr=30
+set thread=32
 
 ::-------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ::!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ::                                  Do Not Modify
 ::-------------------------------------------------------
+
 @echo off
 mode con cols=60 lines=20
 color 0a
@@ -63,6 +39,7 @@ set timest=%time%
 set cproxy= -f
 if defined aproxy set cproxy= -x %aproxy%
 if not defined aproxy set aproxy=No
+
 :loops
 cls
 echo Consuming data...
@@ -71,16 +48,25 @@ echo Starting time : %timest%
 echo Time now : %time%
 echo.
 echo Threads : %thread%
-echo Auto refresh time : %refr%s
 echo File link : "%link%"
 echo Proxy : "%aproxy%"
 echo.
 echo Close window to stop
 echo Press Y to refresh if failing or stuck
 echo.
-for /l %%s in (1,1,%thread%) do (
-start /b curl -s -q%cproxy% -L -f -k --raw -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.13 Safari/537.36" %link% --output nul
+
+:checkThreads
+for /F %%i in ('tasklist ^| findstr /I /C:"curl.exe" ^| find /C "."') do set running=%%i
+set /A threads_needed=%thread%-%running%
+echo Threads running: %running%, additional threads needed: %threads_needed%
+
+if %threads_needed% GTR 0 (
+    for /L %%j in (1,1,%threads_needed%) do (
+        start /b curl -s -q%cproxy% -L -f -k --raw -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.13 Safari/537.36" %link% --output nul
+    )
 )
-choice /t %refr% /d y /n >nul
-taskkill /f /im curl.exe
-goto loops
+
+:: Check for new threads every second
+timeout /t 1 >nul
+
+goto checkThreads
