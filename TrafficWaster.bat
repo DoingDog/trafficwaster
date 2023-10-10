@@ -6,7 +6,7 @@
 ::   enable only one before using (delete"::" before "set")
 
 ::   CN file link
-set link=https://down.360safe.com/se/360se14.2.1166.0.exe
+set link=https://dl.hdslb.com/mobile/fixed/bili_win/bili_win-install.exe
 
 ::   Global file link
 ::set link=https://jp.edis.at/1000MB.test
@@ -32,6 +32,7 @@ set thread=32
 ::-------------------------------------------------------
 
 @echo off
+title Traffic Waster 2.0
 mode con cols=60 lines=20
 color 0a
 cd /d %~dp0
@@ -52,10 +53,8 @@ echo File link : "%link%"
 echo Proxy : "%aproxy%"
 echo.
 echo Close window to stop
-echo Press Y to refresh if failing or stuck
 echo.
 
-:checkThreads
 for /F %%i in ('tasklist ^| findstr /I /C:"curl.exe" ^| find /C "."') do set running=%%i
 set /A threads_needed=%thread%-%running%
 echo Threads running: %running%, additional threads needed: %threads_needed%
@@ -69,4 +68,4 @@ if %threads_needed% GTR 0 (
 :: Check for new threads every second
 timeout /t 1 >nul
 
-goto checkThreads
+goto loops
